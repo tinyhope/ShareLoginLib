@@ -101,6 +101,10 @@ public class MainActivity extends AppCompatActivity {
     public void onClick(View v) {
         SsoShareManager.ShareStateListener mShareListener = new ShareListener(this);
 
+        if (SsoLoginManager.listener != null || SsoShareManager.listener != null) {
+            throw new RuntimeException("static listener leaked");
+        }
+        
         int i = v.getId();
         switch (i) {
             case R.id.QQ登录:

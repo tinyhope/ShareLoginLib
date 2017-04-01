@@ -77,6 +77,7 @@ public class SsoUserInfoManager {
      */
     public static void getWeiBoUserInfo(Context context, final @NonNull String accessToken, final @NonNull String uid,
             @Nullable final UserInfoListener listener) {
+
         AsyncWeiboRunner runner = new AsyncWeiboRunner(context);
         WeiboParameters params = new WeiboParameters(null);
         params.put("access_token", accessToken);
@@ -146,7 +147,7 @@ public class SsoUserInfoManager {
 
         private UserInfoListener listener;
 
-        public UserInfoRequestListener(UserInfoListener listener) {
+        UserInfoRequestListener(UserInfoListener listener) {
             this.listener = listener;
         }
 

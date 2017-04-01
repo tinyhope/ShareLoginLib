@@ -9,7 +9,7 @@ import com.liulishuo.share.SsoShareManager;
  * @author Jack Tony
  * @date 2015/10/23
  */
-class ShareListener implements SsoShareManager.ShareStateListener {
+class ShareListener extends SsoShareManager.ShareStateListener {
 
     private MainActivity activity;
 
@@ -19,6 +19,7 @@ class ShareListener implements SsoShareManager.ShareStateListener {
 
     @Override
     public void onSuccess() {
+        super.onSuccess();
         String result = "分享成功";
         Toast.makeText(activity, result, Toast.LENGTH_SHORT).show();
         activity.handResult(result);
@@ -26,6 +27,7 @@ class ShareListener implements SsoShareManager.ShareStateListener {
 
     @Override
     public void onError(String msg) {
+        super.onError(msg);
         String result = "分享失败，出错信息：" + msg;
         Toast.makeText(activity, result, Toast.LENGTH_SHORT).show();
         activity.handResult(result);
@@ -33,6 +35,7 @@ class ShareListener implements SsoShareManager.ShareStateListener {
 
     @Override
     public void onCancel() {
+        super.onCancel();
         String result = "取消分享";
         Toast.makeText(activity, result, Toast.LENGTH_SHORT).show();
         activity.handResult(result);

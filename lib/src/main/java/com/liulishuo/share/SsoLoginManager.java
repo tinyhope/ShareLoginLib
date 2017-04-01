@@ -2,6 +2,7 @@ package com.liulishuo.share;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -52,7 +53,7 @@ public class SsoLoginManager {
                 break;
             case WEIXIN:
                 if (ShareLoginSDK.isWeiXinInstalled(activity)) {
-                    SL_WeiXinHandlerActivity.wxrespListener = weixinCodeRespListener;
+                    SL_WeiXinHandlerActivity.wxRespListener = weixinCodeRespListener;
                     SL_WeiXinHandlerActivity.login(activity.getApplicationContext());
                     activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                 } else {
@@ -66,10 +67,10 @@ public class SsoLoginManager {
 
     public static void recycle() {
         listener = null;
-        SL_WeiXinHandlerActivity.wxrespListener = null;
+        SL_WeiXinHandlerActivity.wxRespListener = null;
     }
 
-    public interface LoginListener {
+    public static class LoginListener {
 
         /**
          * @param accessToken 第三方给的一次性token，几分钟内会失效
@@ -77,11 +78,25 @@ public class SsoLoginManager {
          * @param expiresIn   过期时间
          * @param wholeData   第三方本身返回的全部json数据
          */
-        void onSuccess(String accessToken, String uId, long expiresIn, @Nullable String wholeData);
+        @CallSuper
+        public void onSuccess(String accessToken, String uId, long expiresIn, @Nullable String wholeData) {
+            onComplete();
+        }
 
-        void onError(String msg);
+        @CallSuper
+        public void onError(String errorMsg) {
+            onComplete();
+        }
 
-        void onCancel();
+        @CallSuper
+        public void onCancel() {
+            onComplete();
+        }
+
+        @CallSuper
+        protected void onComplete() {
+            SsoLoginManager.recycle();
+        }
     }
 
     public interface WXLoginRespListener {

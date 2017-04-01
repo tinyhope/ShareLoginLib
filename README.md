@@ -34,27 +34,43 @@ compile 'com.github.tianzhijiexian:ShareLoginLib:1.3.8'
 ### 登录、分享  
 ```JAVA  
 // 登录
-SsoLoginManager.login(this, SsoLoginType.XXX, new LoginListener() {
+SsoLoginManager.login(this, SsoLoginType.XXX, new SsoLoginManager.LoginListener(){
+                    @Override
+                    public void onSuccess(String accessToken, String uId, long expiresIn, @Nullable String wholeData) {
+                        super.onSuccess(accessToken, uId, expiresIn, wholeData); // must call super
+                    }
 
-      public void onSuccess(String accessToken, String uId, long expiresIn, @Nullable String wholeJsonData) {}
+                    @Override
+                    public void onCancel() {
+                        super.onCancel(); // must call super
+                    }
 
-      public void onError(String errorMsg) {}
-
-      public void onCancel() {}
-  });
+                    @Override
+                    public void onError(String errorMsg) {
+                        super.onError(errorMsg); // must call super
+                    }
+                });
 
 
 // 分享
 SsoShareManager.share(MainActivity.this, SsoShareType.XXX
         new ShareContentWebpage("title", "summary", "http://www.kale.com", mBitmap),
-        new ShareStateListener() {
+        new SsoShareManager.ShareStateListener(){
+                    @Override
+                    public void onSuccess() {
+                        super.onSuccess(); // must call super
+                    }
 
-                  public void onSuccess() {}
+                    @Override
+                    public void onCancel() {
+                        super.onCancel(); // must call super
+                    }
 
-                  public void onCancel() {}
-
-                  public void onError(String errorMsg) {}
-              });
+                    @Override
+                    public void onError(String msg) {
+                        super.onError(msg); // must call super
+                    }
+                });
 
 ```   
 
@@ -112,6 +128,7 @@ ShareLoginSDK.init(this, config);
 
 ## 重要说明
 
+- 需要强制获取外部存储卡的权限，否则会拿不到分享的图片
 - 签名后的app才可以进行测试
 - 使用者要在第三方平台进行注册后才可测试
 - 库作者不会提供任何和签名、密码、AppId等有关信息
@@ -124,16 +141,7 @@ ShareLoginSDK.init(this, config);
 - 安装第三方应用，但第三方应用未登录  
 - 未开启不保留活动，并且第三方应用已经登录
 
-## 已知的第三方SDK的bug（本lib无法解决）
-1. 不能信任第三方的回调，操作后可能会得不到任何回调
-2. 分享到了微信，用户留在了微信，那么就永远接收不到回调了
-1. 如果没进行微博的登录，直接调用微博分享，有一定概率会出现分享失败
-2. 分享途中通过通知消息进入别的app后，可能会因为内存不足等奇葩情况，你的应用被杀死，没有回调
-3. 如果你手机中安装了微信，并且微信已经登录。直接从你的应用分享到微信是没有任何回调的，只有在你用微信登录你的应用（无论登录是否成功，取消也行）后，才能有回调 
-4. 当开启不保留活动后，有可能会出现界面的显示异常，这个和第三方的应用有密切关系，微博尤其明显
-
 ## 配置运行本demo的环境
-
 
 如果你要运行该项目给出的demo，那么可以修改本地的`gradle.properties`文件，将下列信息修改成你自己的值。   
 

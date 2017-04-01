@@ -2,6 +2,7 @@ package com.liulishuo.share;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -92,13 +93,27 @@ public class SsoShareManager {
         }
     }
 
-    public interface ShareStateListener {
+    public static class ShareStateListener {
 
-        void onSuccess();
+        @CallSuper
+        public void onSuccess() {
+            onComplete();
+        }
 
-        void onCancel();
+        @CallSuper
+        public void onCancel() {
+            onComplete();
+        }
 
-        void onError(String msg);
+        @CallSuper
+        public void onError(String msg) {
+            onComplete();
+        }
+
+        @CallSuper
+        protected void onComplete() {
+            SsoShareManager.recycle();
+        }
     }
 
     public static void recycle() {

@@ -13,7 +13,7 @@ import com.liulishuo.share.type.SsoLoginType;
  * @author Kale
  * @date 2016/4/5
  */
-class LoginListener implements SsoLoginManager.LoginListener {
+class LoginListener extends SsoLoginManager.LoginListener {
 
     private static final String TAG = "LoginListener";
 
@@ -30,9 +30,10 @@ class LoginListener implements SsoLoginManager.LoginListener {
 
     @Override
     public void onSuccess(String accessToken, String userId, long expiresIn, String data) {
+        super.onSuccess(accessToken, userId, expiresIn, data);
         Log.d(TAG, "accessToken = " + accessToken + "\nuid = " + userId + "\nexpires_in = " + expiresIn);
         loadUserInfo(accessToken, userId);
-        
+
         String result = "登录成功";
         Toast.makeText(activity, result, Toast.LENGTH_SHORT).show();
         activity.handResult(result);
@@ -40,6 +41,7 @@ class LoginListener implements SsoLoginManager.LoginListener {
 
     @Override
     public void onError(String msg) {
+        super.onError(msg);
         String result = "登录失败,失败信息：" + msg;
         Toast.makeText(activity, result, Toast.LENGTH_SHORT).show();
         activity.handResult(result);
@@ -47,6 +49,7 @@ class LoginListener implements SsoLoginManager.LoginListener {
 
     @Override
     public void onCancel() {
+        super.onCancel();
         String result = "取消登录";
         Toast.makeText(activity, result, Toast.LENGTH_SHORT).show();
         activity.handResult(result);
