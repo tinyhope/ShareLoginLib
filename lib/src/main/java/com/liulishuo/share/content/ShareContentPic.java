@@ -18,6 +18,8 @@ public class ShareContentPic implements ShareContent {
 
     private String largeBmpPath;
 
+	private String thumbUrl;
+
     /**
      * @param thumbBmp 如果需要分享图片，则必传
      */
@@ -25,6 +27,10 @@ public class ShareContentPic implements ShareContent {
         this.thumbBmp = thumbBmp;
         this.largeBmp = largeBmp;
     }
+
+    public ShareContentPic(@Nullable String thumbUrl) {
+		this.thumbUrl = thumbUrl;
+	}
 
     @Override
     public String getSummary() {
@@ -70,6 +76,10 @@ public class ShareContentPic implements ShareContent {
         return largeBmp;
     }
 
+    public String getThumbUrl() {
+		return thumbUrl;
+	}
+
     public void setThumbBmpBytes(byte[] thumbBmpBytes) {
         this.thumbBmpBytes = thumbBmpBytes;
     }
@@ -87,11 +97,13 @@ public class ShareContentPic implements ShareContent {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeByteArray(this.thumbBmpBytes);
         dest.writeString(this.largeBmpPath);
+		dest.writeString(this.thumbUrl);
     }
 
     ShareContentPic(Parcel in) {
         this.thumbBmpBytes = in.createByteArray();
         this.largeBmpPath = in.readString();
+		this.thumbUrl = in.readString();
     }
 
     public static final Creator<ShareContentPic> CREATOR = new Creator<ShareContentPic>() {

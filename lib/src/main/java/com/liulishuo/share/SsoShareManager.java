@@ -41,7 +41,11 @@ public class SsoShareManager {
                 @Override
                 public void run() {
                     super.run();
-                    content.setThumbBmpBytes(SlUtils.getImageThumbByteArr(content.getThumbBmp()));
+					if (content.getThumbBmp() != null) {
+						content.setThumbBmpBytes(SlUtils.getImageThumbByteArr(content.getThumbBmp()));
+					} else {
+						content.setThumbBmpBytes(SlUtils.getImageThumbByteArr(content.getThumbUrl()));
+					}
                     content.setLargeBmpPath(SlUtils.saveLargeBitmap(content.getLargeBmp()));
                     activity.runOnUiThread(() -> doShareSync(activity, shareType, shareContent, listener));
                 }

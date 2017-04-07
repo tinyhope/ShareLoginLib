@@ -30,6 +30,13 @@ public class ShareContentWebPage extends ShareContentPic {
         this.url = url;
     }
 
+    public ShareContentWebPage(@NonNull String title, @NonNull String summary, String actionUrl, @Nullable String thumbUrl) {
+		super(thumbUrl);
+		this.title = title;
+		this.summary = summary;
+		this.url = actionUrl;
+	}
+
     @Override
     public String getSummary() {
         return summary;

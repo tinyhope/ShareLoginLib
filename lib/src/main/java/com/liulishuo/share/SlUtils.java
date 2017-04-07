@@ -1,20 +1,41 @@
 package com.liulishuo.share;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.ThumbnailUtils;
+import android.support.annotation.Nullable;
+import android.text.TextUtils;
+
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-
-import android.graphics.Bitmap;
-import android.media.ThumbnailUtils;
-import android.support.annotation.Nullable;
-import android.text.TextUtils;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 /**
  * @author Kale
  * @date 2017/3/21
  */
 class SlUtils {
+
+	@Nullable
+	static byte[] getImageThumbByteArr(@Nullable String src) {
+		return getImageThumbByteArr(getBitmapFromUrl(src));
+	}
+
+	@Nullable
+	private static Bitmap getBitmapFromUrl(@Nullable String src) {
+		try {
+			URL url = new URL(src);
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			conn.connect();
+			return BitmapFactory.decodeStream(conn.getInputStream());
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 
     /**
      * Note:外部传入的bitmap可能会被用于其他的地方，所以这里不能做recycle()

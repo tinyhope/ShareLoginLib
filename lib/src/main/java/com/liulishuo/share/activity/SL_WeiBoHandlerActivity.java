@@ -258,16 +258,13 @@ public class SL_WeiBoHandlerActivity extends Activity implements IWeiboHandler.R
                 break;
             case ShareContentType.PIC:
                 // 纯图片
-                weiboMultiMessage.imageObject = getImageObj(shareContent);
+                weiboMultiMessage.imageObject = getImageObj(shareContent.getLargeBmpPath());
                 break;
             case ShareContentType.WEBPAGE:
                 // 网页
-                if (shareContent.getURL() == null) {
-                    weiboMultiMessage.imageObject = getImageObj(shareContent);
-                    weiboMultiMessage.textObject = getTextObj(shareContent);
-                } else {
-                    weiboMultiMessage.mediaObject = getWebPageObj(shareContent);
-                }
+				weiboMultiMessage.imageObject = getImageObj(shareContent.getThumbBmpBytes());
+//				weiboMultiMessage.textObject = getTextObj(shareContent);
+				weiboMultiMessage.mediaObject = getWebPageObj(shareContent);
                 break;
             case ShareContentType.MUSIC:
                 // 音乐
@@ -288,6 +285,18 @@ public class SL_WeiBoHandlerActivity extends Activity implements IWeiboHandler.R
         textObject.text = shareContent.getSummary();
         return textObject;
     }
+
+    private ImageObject getImageObj(String bitmapPath) {
+		ImageObject imageObject = new ImageObject();
+		imageObject.imagePath = bitmapPath;
+		return imageObject;
+	}
+
+	private ImageObject getImageObj(byte[] bitmapData) {
+		ImageObject imageObject = new ImageObject();
+		imageObject.imageData = bitmapData;
+		return imageObject;
+	}
 
     /**
      * 创建图片消息对象
