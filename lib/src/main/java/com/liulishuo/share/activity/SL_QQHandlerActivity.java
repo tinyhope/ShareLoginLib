@@ -1,10 +1,5 @@
 package com.liulishuo.share.activity;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -19,6 +14,7 @@ import com.liulishuo.share.SlConfig;
 import com.liulishuo.share.SsoLoginManager;
 import com.liulishuo.share.SsoShareManager;
 import com.liulishuo.share.content.ShareContent;
+import com.liulishuo.share.content.ShareContentWebPage;
 import com.liulishuo.share.type.ShareContentType;
 import com.tencent.connect.common.Constants;
 import com.tencent.connect.share.QQShare;
@@ -28,6 +24,11 @@ import com.tencent.tauth.Tencent;
 import com.tencent.tauth.UiError;
 
 import org.json.JSONObject;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * @author Jack Tony
@@ -185,7 +186,7 @@ public class SL_QQHandlerActivity extends Activity {
                 // 文档中说： "本接口支持3种模式，每种模式的参数设置不同"，这三种模式中不包含纯文本
                 Toast.makeText(SL_QQHandlerActivity.this, "目前不支持分享纯文本信息给QQ好友", Toast.LENGTH_SHORT).show();
                 Log.e(ShareLoginSDK.TAG, Log.getStackTraceString(new RuntimeException("目前不支持分享纯文本信息给QQ好友")));
-                bundle = getWebPageObj(); // fake bundle
+                bundle = getWebPageObj(shareContent); // fake bundle
                 finish();
                 break;
             case ShareContentType.PIC:
@@ -194,7 +195,7 @@ public class SL_QQHandlerActivity extends Activity {
                 break;
             case ShareContentType.WEBPAGE:
                 // 网页
-                bundle = getWebPageObj();
+                bundle = getWebPageObj(shareContent);
                 break;
             case ShareContentType.MUSIC:
                 // 音乐
@@ -227,7 +228,7 @@ public class SL_QQHandlerActivity extends Activity {
         params.putString(QQShare.SHARE_TO_QQ_SUMMARY, shareContent.getSummary()); // 描述
         params.putString(QQShare.SHARE_TO_QQ_TARGET_URL, shareContent.getURL()); // 这条分享消息被好友点击后的跳转URL
         params.putString(QQShare.SHARE_TO_QQ_APP_NAME, SlConfig.appName); // 手Q客户端顶部，替换“返回”按钮文字，如果为空，用返回代替 (可选)
-        return params;
+		return params;
     }
 
     private Bundle getImageObj(ShareContent shareContent) {
@@ -244,10 +245,11 @@ public class SL_QQHandlerActivity extends Activity {
         return params;
     }
 
-    private Bundle getWebPageObj() {
+    private Bundle getWebPageObj(ShareContent shareContent) {
         final Bundle params = new Bundle();
         params.putInt(QQShare.SHARE_TO_QQ_KEY_TYPE, QQShare.SHARE_TO_QQ_TYPE_DEFAULT);
-        return params;
+        params.putString(QQShare.SHARE_TO_QQ_IMAGE_URL, ((ShareContentWebPage)shareContent).getThumbUrl());
+		return params;
     }
 
     private Bundle getMusicObj(ShareContent shareContent) {
