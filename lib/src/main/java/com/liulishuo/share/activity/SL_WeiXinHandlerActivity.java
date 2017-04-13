@@ -7,9 +7,11 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.liulishuo.share.SlConfig;
 import com.liulishuo.share.SsoLoginManager;
+import com.liulishuo.share.SsoPayManager;
 import com.liulishuo.share.SsoShareManager;
 import com.liulishuo.share.content.ShareContent;
 import com.liulishuo.share.type.ShareContentType;
@@ -18,6 +20,7 @@ import com.sina.weibo.sdk.exception.WeiboException;
 import com.sina.weibo.sdk.net.AsyncWeiboRunner;
 import com.sina.weibo.sdk.net.RequestListener;
 import com.sina.weibo.sdk.net.WeiboParameters;
+import com.tencent.mm.opensdk.constants.ConstantsAPI;
 import com.tencent.mm.opensdk.modelbase.BaseReq;
 import com.tencent.mm.opensdk.modelbase.BaseResp;
 import com.tencent.mm.opensdk.modelmsg.SendAuth;
@@ -27,12 +30,16 @@ import com.tencent.mm.opensdk.modelmsg.WXMediaMessage;
 import com.tencent.mm.opensdk.modelmsg.WXMusicObject;
 import com.tencent.mm.opensdk.modelmsg.WXTextObject;
 import com.tencent.mm.opensdk.modelmsg.WXWebpageObject;
+import com.tencent.mm.opensdk.modelpay.PayReq;
+import com.tencent.mm.opensdk.modelpay.PayResp;
 import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.IWXAPIEventHandler;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import static com.liulishuo.share.ShareLoginSDK.TAG;
 
 /**
  * Created by echo on 5/19/15.
@@ -77,14 +84,16 @@ public class SL_WeiXinHandlerActivity extends Activity implements IWXAPIEventHan
         if (resp != null) {
             if (resp instanceof SendAuth.Resp && resp.getType() == TYPE_LOGIN) {
                 parseLoginResp(this, (SendAuth.Resp) resp, SsoLoginManager.listener);
-            } else {
-                parseShareResp(resp, SsoShareManager.listener);
-            }
+            } else if (resp.getType() == ConstantsAPI.COMMAND_PAY_BY_WX){
+            	parsePayResp((PayResp)resp, SsoPayManager.onPayListener);
+			} else {
+				parseShareResp(resp, SsoShareManager.listener);
+			}
         }
         finish();
     }
 
-    ///////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////
     // login
     ///////////////////////////////////////////////////////////////////////////
 
@@ -299,4 +308,64 @@ public class SL_WeiXinHandlerActivity extends Activity implements IWXAPIEventHan
             }
         }
     }
+
+	private void parsePayResp(PayResp resp, SsoPayManager.OnPayListener listener) {
+		if (listener != null) {
+			switch (resp.errCode) {
+				case BaseResp.ErrCode.ERR_OK:
+					listener.onSuccess();
+					break;
+				case BaseResp.ErrCode.ERR_USER_CANCEL:
+					listener.onCancel();
+					break;
+				default:
+					listener.onError("未知错误");
+					break;
+			}
+		}
+	}
+
+    private static void ensureAppId() {
+		if (TextUtils.isEmpty(SlConfig.weiXinAppId)) {
+			throw new NullPointerException("请通过shareBlock初始化WeiXinAppId");
+		}
+	}
+
+    public static void pay(@NonNull Context context, @Nullable String payData) {
+		ensureAppId();
+		PayReq payReq = parsePayData(payData);
+		if (payReq != null) {
+			doPay(context, payReq);
+		} else {
+			if (SsoPayManager.onPayListener != null) {
+				SsoPayManager.onPayListener.onError("支付请求错误");
+			}
+		}
+	}
+
+	@Nullable
+	private static PayReq parsePayData(@Nullable String data) {
+		try {
+			PayReq payReq = new PayReq();
+			JSONObject o = new JSONObject(data);
+			payReq.appId = o.getString("appid");
+			payReq.partnerId = o.getString("partnerid");
+			payReq.prepayId = o.getString("prepayid");
+			payReq.packageValue = o.getString("package");
+			payReq.nonceStr = o.getString("noncestr");
+			payReq.timeStamp = o.getString("timestamp");
+			payReq.sign = o.getString("sign");
+			payReq.transaction = payReq.nonceStr;
+			return payReq;
+		} catch (Exception e) {
+			Log.e(TAG, "parse error ==> " + e.toString());
+		}
+		return null;
+	}
+
+	private static void doPay(@NonNull Context context, @NonNull PayReq req) {
+		IWXAPI api = WXAPIFactory.createWXAPI(context.getApplicationContext(), SlConfig.weiXinAppId, true);
+		api.registerApp(SlConfig.weiXinAppId);
+		api.sendReq(req);
+	}
 }

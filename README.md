@@ -1,5 +1,5 @@
 # ShareLoginLib   
-[![](https://jitpack.io/v/tianzhijiexian/ShareLoginLib.svg)](https://jitpack.io/#tianzhijiexian/ShareLoginLib)  
+[![](https://jitpack.io/v/MankIndX/ShareLoginLib.svg)](https://jitpack.io/#MankIndX/ShareLoginLib)  
 
 ShareLoginLib likes simple sharesdk or umeng in China . It is a tool to help developers to share their content (image , text or webpage ) to WeChat,Weibo and QQ.  
 
@@ -22,16 +22,11 @@ repositories {
 ```
 
 2.在用到的项目中添加依赖  
->	compile 'com.github.tianzhijiexian:ShareLoginLib:[Latest release](https://github.com/tianzhijiexian/ShareLoginLib/releases) (< click it)'  
-
-**举例：**
-```
-compile 'com.github.tianzhijiexian:ShareLoginLib:1.3.8'
-```
+>	compile 'com.github.MankIndX:ShareLoginLib:[Latest release](https://github.com/MankIndX/ShareLoginLib/releases) (< click it)'  
 
 ## 使用
 
-### 登录、分享  
+### 登录、分享、支付  
 ```JAVA  
 // 登录
 SsoLoginManager.login(this, SsoLoginType.XXX, new SsoLoginManager.LoginListener(){
@@ -59,6 +54,30 @@ SsoShareManager.share(MainActivity.this, SsoShareType.XXX
                     @Override
                     public void onSuccess() {
                         super.onSuccess(); // must call super
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        super.onCancel(); // must call super
+                    }
+
+                    @Override
+                    public void onError(String msg) {
+                        super.onError(msg); // must call super
+                    }
+                });
+
+// 支付
+SsoPayManager.pay(MainActivity.this, SsoPayType.XXX, payData,
+        new SsoPayManager.OnPayListener(){
+                    @Override
+                    public void onSuccess() {
+                        super.onSuccess(); // must call super
+                    }
+
+                    @Override
+                    public void onPending() {
+                        super.onPending(); // must call super
                     }
 
                     @Override

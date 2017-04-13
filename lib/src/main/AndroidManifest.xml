@@ -87,6 +87,14 @@
             android:theme="@android:style/Theme.Translucent.NoTitleBar"
             />
 
-    </application>
+		<activity-alias
+			android:name="${applicationId}.wxapi.WXPayEntryActivity"
+			android:exported="true"
+			android:screenOrientation="portrait"
+			android:targetActivity="com.liulishuo.share.activity.SL_WeiXinHandlerActivity"
+			android:theme="@android:style/Theme.Translucent.NoTitleBar"
+			/>
+
+	</application>
 
 </manifest>
