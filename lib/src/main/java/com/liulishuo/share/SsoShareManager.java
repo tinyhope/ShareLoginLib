@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-
 import com.liulishuo.share.activity.SL_QQHandlerActivity;
 import com.liulishuo.share.activity.SL_WeiBoHandlerActivity;
 import com.liulishuo.share.activity.SL_WeiXinHandlerActivity;
@@ -41,13 +40,18 @@ public class SsoShareManager {
                 @Override
                 public void run() {
                     super.run();
-					if (content.getThumbBmp() != null) {
-						content.setThumbBmpBytes(SlUtils.getImageThumbByteArr(content.getThumbBmp()));
-					} else {
-						content.setThumbBmpBytes(SlUtils.getImageThumbByteArr(content.getThumbUrl()));
-					}
+                    if (content.getThumbBmp() != null) {
+                        content.setThumbBmpBytes(SlUtils.getImageThumbByteArr(content.getThumbBmp()));
+                    } else {
+                        content.setThumbBmpBytes(SlUtils.getImageThumbByteArr(content.getThumbUrl()));
+                    }
                     content.setLargeBmpPath(SlUtils.saveLargeBitmap(content.getLargeBmp()));
-                    activity.runOnUiThread(() -> doShareSync(activity, shareType, shareContent, listener));
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            doShareSync(activity, shareType, shareContent, listener);
+                        }
+                    });
                 }
             }.start();
         } else {
@@ -57,21 +61,16 @@ public class SsoShareManager {
 
     private static void doShareSync(@NonNull Activity activity, @SsoShareType String shareType,
             @NonNull ShareContent shareContent, @Nullable ShareStateListener listener) {
-
         switch (shareType) {
             case QQ_FRIEND:
             case QQ_ZONE:
-                if (ShareLoginSDK.isQQInstalled(activity)) {
-                    activity.startActivity(
-                            new Intent(activity, SL_QQHandlerActivity.class)
-                                    .putExtra(SL_QQHandlerActivity.KEY_TO_FRIEND, shareType.equals(QQ_FRIEND))
-                                    .putExtra(KEY_CONTENT, shareContent)
-                                    .putExtra(ShareLoginSDK.KEY_IS_LOGIN_TYPE, false)
-                    );
-                    activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-                } else if (listener != null) {
-                    listener.onError("未安装QQ");
-                }
+                activity.startActivity(
+                        new Intent(activity, SL_QQHandlerActivity.class)
+                                .putExtra(SL_QQHandlerActivity.KEY_TO_FRIEND, shareType.equals(QQ_FRIEND))
+                                .putExtra(KEY_CONTENT, shareContent)
+                                .putExtra(ShareLoginSDK.KEY_IS_LOGIN_TYPE, false)
+                );
+                activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                 break;
             case WEIBO_TIME_LINE:
                 if (ShareLoginSDK.isWeiBoInstalled(activity)) {
@@ -89,12 +88,19 @@ public class SsoShareManager {
             case WEIXIN_FRIEND_ZONE:
             case WEIXIN_FAVORITE:
                 if (ShareLoginSDK.isWeiXinInstalled(activity)) {
-                    new SL_WeiXinHandlerActivity().sendShareMsg(activity.getApplicationContext(), shareContent, shareType);
+                    new SL_WeiXinHandlerActivity().sendShareMsg(activity.getApplicationContext(), shareContent,
+                            shareType);
                 } else if (listener != null) {
                     listener.onError("未安装微信");
                 }
                 break;
+            default:
+                throw new IllegalArgumentException("not supported share type");
         }
+    }
+
+    public static void recycle() {
+        listener = null;
     }
 
     public static class ShareStateListener {
@@ -115,12 +121,8 @@ public class SsoShareManager {
         }
 
         @CallSuper
-        protected void onComplete() {
+        void onComplete() {
             SsoShareManager.recycle();
         }
-    }
-
-    public static void recycle() {
-        listener = null;
     }
 }

@@ -13,14 +13,14 @@ import com.liulishuo.share.type.ShareContentType;
  */
 public class ShareContentWebPage extends ShareContentPic {
 
-    private String title, summary, url; 
+    private String title, summary, url;
 
     /**
-     * @param title   标题
+     * @param title 标题
      * @param summary 描述
-     * @param url     点击分享的内容后跳转的链接
-     * @param thumb   图片的bitmap。保证在32kb以内,如果要分享图片，那么必传
-     * @param large   大图的bitmap。10m以内，如果要分享图片，那么必传
+     * @param url 点击分享的内容后跳转的链接
+     * @param thumb 图片的bitmap。保证在32kb以内,如果要分享图片，那么必传
+     * @param large 大图的bitmap。10m以内，如果要分享图片，那么必传
      */
     public ShareContentWebPage(@NonNull String title, @NonNull String summary, String url,
             @Nullable Bitmap thumb, @Nullable Bitmap large) {
@@ -30,12 +30,13 @@ public class ShareContentWebPage extends ShareContentPic {
         this.url = url;
     }
 
-    public ShareContentWebPage(@NonNull String title, @NonNull String summary, String actionUrl, @Nullable String thumbUrl) {
-		super(thumbUrl);
-		this.title = title;
-		this.summary = summary;
-		this.url = actionUrl;
-	}
+    public ShareContentWebPage(@NonNull String title, @NonNull String summary, String actionUrl,
+            @Nullable String thumbUrl) {
+        super(thumbUrl);
+        this.title = title;
+        this.summary = summary;
+        this.url = actionUrl;
+    }
 
     @Override
     public String getSummary() {

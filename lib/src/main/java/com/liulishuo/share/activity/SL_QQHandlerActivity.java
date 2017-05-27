@@ -32,21 +32,19 @@ import java.util.Collections;
 
 /**
  * @author Jack Tony
- * @date 2015/10/26
+ *         2015/10/26
  *
- * http://wiki.connect.qq.com/sdk%E4%B8%8B%E8%BD%BD
- * http://wiki.open.qq.com/wiki/mobile/API%E8%B0%83%E7%94%A8%E8%AF%B4%E6%98%8E
- * http://wiki.open.qq.com/wiki/mobile/SDK%E4%B8%8B%E8%BD%BD
+ *         http://wiki.connect.qq.com/sdk%E4%B8%8B%E8%BD%BD
+ *         http://wiki.open.qq.com/wiki/mobile/API%E8%B0%83%E7%94%A8%E8%AF%B4%E6%98%8E
+ *         http://wiki.open.qq.com/wiki/mobile/SDK%E4%B8%8B%E8%BD%BD
  *
- * 仅仅qq分享的sdk支持url，但是竟然不支持https的图片！！！
+ *         仅仅qq分享的sdk支持url，但是竟然不支持https的图片！！！
  */
 public class SL_QQHandlerActivity extends Activity {
 
     public static final String KEY_TO_FRIEND = "key_to_friend";
 
     private boolean isToFriend;
-
-    private IUiListener uiListener;
 
     /**
      * 防止不保留活动情况下activity被重置后直接进行操作的情况
@@ -62,16 +60,11 @@ public class SL_QQHandlerActivity extends Activity {
         }
 
         if (isLogin) {
-            initLoginListener(SsoLoginManager.listener);
-
             if (savedInstanceState == null) {
                 doLogin(this, appId);
             }
         } else {
             isToFriend = intent.getBooleanExtra(KEY_TO_FRIEND, true);
-            // 每次进来都初始化一次，保证不保留活动的时候listener也不为null
-            initShareListener(SsoShareManager.listener);
-
             if (savedInstanceState == null) {
                 ShareContent shareContent = intent.getParcelableExtra(SsoShareManager.KEY_CONTENT);
                 doShare(shareContent, appId);
@@ -82,8 +75,8 @@ public class SL_QQHandlerActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (uiListener != null) {
-            Tencent.handleResultData(data, uiListener);
+        if (qqLoginListener != null) {
+            Tencent.handleResultData(data, qqLoginListener);
         }
         finish();
     }
@@ -92,93 +85,93 @@ public class SL_QQHandlerActivity extends Activity {
     // login
     ///////////////////////////////////////////////////////////////////////////
 
-    private void initLoginListener(final SsoLoginManager.LoginListener listener) {
-        uiListener = new IUiListener() {
-            @Override
-            public void onComplete(Object object) {
-                if (listener != null) {
-                    JSONObject jsonObject = ((JSONObject) object);
-                    try {
-                        String token = jsonObject.getString(Constants.PARAM_ACCESS_TOKEN);
-                        String openId = jsonObject.getString(Constants.PARAM_OPEN_ID);
-                        String expires = jsonObject.getString(Constants.PARAM_EXPIRES_IN);
-                        listener.onSuccess(token, openId, Long.valueOf(expires), object.toString());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            @Override
-            public void onError(UiError uiError) {
-                if (listener != null) {
-                    listener.onError(uiError.errorCode + " - " + uiError.errorMessage + " - " + uiError.errorDetail);
-                }
-            }
-
-            @Override
-            public void onCancel() {
-                if (listener != null) {
-                    listener.onCancel();
-                }
-            }
-        };
-    }
-
     private void doLogin(Activity activity, String appId) {
         Tencent tencent = Tencent.createInstance(appId, activity.getApplicationContext());
         if (!tencent.isSessionValid()) {
-            tencent.login(activity, SlConfig.qqScope, uiListener);
+            tencent.login(activity, SlConfig.qqScope, qqLoginListener);
         } else {
             tencent.logout(activity);
         }
     }
 
+    private static IUiListener qqLoginListener = new IUiListener() {
+
+        @Override
+        public void onComplete(Object object) {
+            try {
+                JSONObject jsonObject = ((JSONObject) object);
+                String token = jsonObject.getString(Constants.PARAM_ACCESS_TOKEN);
+                String openId = jsonObject.getString(Constants.PARAM_OPEN_ID);
+                String expires = jsonObject.getString(Constants.PARAM_EXPIRES_IN);
+                if (SsoLoginManager.listener != null) {
+                    SsoLoginManager.listener.onSuccess(token, openId, Long.valueOf(expires), object.toString());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                if (SsoLoginManager.listener != null) {
+                    SsoLoginManager.listener.onError("数据解析错误");
+                }
+            }
+        }
+
+        @Override
+        public void onError(UiError uiError) {
+            if (SsoLoginManager.listener != null) {
+                SsoLoginManager.listener.onError(
+                        uiError.errorCode + " - " + uiError.errorMessage + " - " + uiError.errorDetail);
+            }
+        }
+
+        @Override
+        public void onCancel() {
+            if (SsoLoginManager.listener != null) {
+                SsoLoginManager.listener.onCancel();
+            }
+        }
+    };
+
     ///////////////////////////////////////////////////////////////////////////
     // share
     ///////////////////////////////////////////////////////////////////////////
+
+    private static IUiListener qqShareListener = new IUiListener() {
+
+        @Override
+        public void onComplete(Object o) {
+            if (SsoShareManager.listener != null) {
+                SsoShareManager.listener.onSuccess();
+            }
+        }
+
+        @Override
+        public void onError(UiError uiError) {
+            if (SsoShareManager.listener != null) {
+                SsoShareManager.listener.onError(
+                        uiError.errorCode + " - " + uiError.errorMessage + " - " + uiError.errorDetail);
+            }
+        }
+
+        @Override
+        public void onCancel() {
+            if (SsoShareManager.listener != null) {
+                SsoShareManager.listener.onCancel();
+            }
+        }
+    };
 
     private void doShare(ShareContent shareContent, String appId) {
         Tencent tencent = Tencent.createInstance(appId, getApplicationContext());
         if (isToFriend) {
             Bundle params = createQQBundle(shareContent);
-            tencent.shareToQQ(this, params, uiListener);
+            tencent.shareToQQ(this, params, qqShareListener);
         } else {
             Bundle params = createQZoneBundle(shareContent);
-            tencent.shareToQzone(this, params, uiListener);
+            tencent.shareToQzone(this, params, qqShareListener);
         }
     }
 
-    private void initShareListener(final SsoShareManager.ShareStateListener listener) {
-        uiListener = new IUiListener() {
-
-            @Override
-            public void onComplete(Object response) {
-                if (listener != null) {
-                    listener.onSuccess();
-                }
-            }
-
-            @Override
-            public void onCancel() {
-                if (listener != null) {
-                    listener.onCancel();
-                }
-            }
-
-            @Override
-            public void onError(UiError e) {
-                if (listener != null) {
-                    listener.onError(e.errorCode + " - " + e.errorMessage + " - " + e.errorDetail);
-                    finish();
-                }
-            }
-        };
-    }
-
-    private
     @NonNull
-    Bundle createQQBundle(ShareContent shareContent) {
+    private Bundle createQQBundle(ShareContent shareContent) {
         Bundle bundle;
         switch (shareContent.getType()) {
             case ShareContentType.TEXT:
@@ -209,13 +202,13 @@ public class SL_QQHandlerActivity extends Activity {
 
     /**
      * @see "http://wiki.open.qq.com/wiki/mobile/API%E8%B0%83%E7%94%A8%E8%AF%B4%E6%98%8E#1.13_.E5.88.86.E4.BA.AB.E6.B6.88.E6.81.AF.E5.88.B0QQ.EF.BC.88.E6.97.A0.E9.9C.80QQ.E7.99.BB.E5.BD.95.EF.BC.89"
-     * QQShare.PARAM_TITLE 	        必填 	String 	分享的标题, 最长30个字符。
-     * QQShare.SHARE_TO_QQ_KEY_TYPE 	必填 	Int 	分享的类型。图文分享(普通分享)填Tencent.SHARE_TO_QQ_TYPE_DEFAULT
-     * QQShare.PARAM_TARGET_URL 	必填 	String 	这条分享消息被好友点击后的跳转URL。
-     * QQShare.PARAM_SUMMARY 	        可选 	String 	分享的消息摘要，最长40个字。
-     * QQShare.SHARE_TO_QQ_IMAGE_URL 	可选 	String 	分享图片的URL或者本地路径
-     * QQShare.SHARE_TO_QQ_APP_NAME 	可选 	String 	手Q客户端顶部，替换“返回”按钮文字，如果为空，用返回代替
-     * QQShare.SHARE_TO_QQ_EXT_INT 	可选 	Int 	分享额外选项，两种类型可选（默认是不隐藏分享到QZone按钮且不自动打开分享到QZone的对话框）：
+     * QQShare.PARAM_TITLE         必填  String   分享的标题, 最长30个字符。
+     * QQShare.SHARE_TO_QQ_KEY_TYPE   必填   Int   分享的类型。图文分享(普通分享)填Tencent.SHARE_TO_QQ_TYPE_DEFAULT
+     * QQShare.PARAM_TARGET_URL     必填  String   这条分享消息被好友点击后的跳转URL。
+     * QQShare.PARAM_SUMMARY          可选    String   分享的消息摘要，最长40个字。
+     * QQShare.SHARE_TO_QQ_IMAGE_URL  可选    String   分享图片的URL或者本地路径
+     * QQShare.SHARE_TO_QQ_APP_NAME   可选    String   手Q客户端顶部，替换“返回”按钮文字，如果为空，用返回代替
+     * QQShare.SHARE_TO_QQ_EXT_INT    可选    Int    分享额外选项，两种类型可选（默认是不隐藏分享到QZone按钮且不自动打开分享到QZone的对话框）：
      * QQShare.SHARE_TO_QQ_FLAG_QZONE_AUTO_OPEN，分享时自动打开分享到QZone的对话框。
      * QQShare.SHARE_TO_QQ_FLAG_QZONE_ITEM_HIDE，分享时隐藏分享到QZone按钮
      *
@@ -228,7 +221,7 @@ public class SL_QQHandlerActivity extends Activity {
         params.putString(QQShare.SHARE_TO_QQ_SUMMARY, shareContent.getSummary()); // 描述
         params.putString(QQShare.SHARE_TO_QQ_TARGET_URL, shareContent.getURL()); // 这条分享消息被好友点击后的跳转URL
         params.putString(QQShare.SHARE_TO_QQ_APP_NAME, SlConfig.appName); // 手Q客户端顶部，替换“返回”按钮文字，如果为空，用返回代替 (可选)
-		return params;
+        return params;
     }
 
     private Bundle getImageObj(ShareContent shareContent) {
@@ -248,8 +241,8 @@ public class SL_QQHandlerActivity extends Activity {
     private Bundle getWebPageObj(ShareContent shareContent) {
         final Bundle params = new Bundle();
         params.putInt(QQShare.SHARE_TO_QQ_KEY_TYPE, QQShare.SHARE_TO_QQ_TYPE_DEFAULT);
-        params.putString(QQShare.SHARE_TO_QQ_IMAGE_URL, ((ShareContentWebPage)shareContent).getThumbUrl());
-		return params;
+        params.putString(QQShare.SHARE_TO_QQ_IMAGE_URL, ((ShareContentWebPage) shareContent).getThumbUrl());
+        return params;
     }
 
     private Bundle getMusicObj(ShareContent shareContent) {
@@ -263,10 +256,10 @@ public class SL_QQHandlerActivity extends Activity {
      * 分享到QQ空间（目前支持图文分享）
      *
      * @see "http://wiki.open.qq.com/wiki/Android_API%E8%B0%83%E7%94%A8%E8%AF%B4%E6%98%8E#1.14_.E5.88.86.E4.BA.AB.E5.88.B0QQ.E7.A9.BA.E9.97.B4.EF.BC.88.E6.97.A0.E9.9C.80QQ.E7.99.BB.E5.BD.95.EF.BC.89"
-     * QzoneShare.SHARE_TO_QQ_KEY_TYPE 	    选填      Int 	SHARE_TO_QZONE_TYPE_IMAGE_TEXT（图文）
-     * QzoneShare.SHARE_TO_QQ_TITLE 	    必填      Int 	分享的标题，最多200个字符。
-     * QzoneShare.SHARE_TO_QQ_SUMMARY 	    选填      String 	分享的摘要，最多600字符。
-     * QzoneShare.SHARE_TO_QQ_TARGET_URL    必填      String 	跳转URL，URL字符串。
+     * QzoneShare.SHARE_TO_QQ_KEY_TYPE    选填      Int SHARE_TO_QZONE_TYPE_IMAGE_TEXT（图文）
+     * QzoneShare.SHARE_TO_QQ_TITLE     必填      Int 分享的标题，最多200个字符。
+     * QzoneShare.SHARE_TO_QQ_SUMMARY     选填      String 分享的摘要，最多600字符。
+     * QzoneShare.SHARE_TO_QQ_TARGET_URL    必填      String 跳转URL，URL字符串。
      * QzoneShare.SHARE_TO_QQ_IMAGE_URL     选填      String     图片链接ArrayList
      *
      * 注意:QZone接口暂不支持发送多张图片的能力，若传入多张图片，则会自动选入第一张图片作为预览图。多图的能力将会在以后支持。

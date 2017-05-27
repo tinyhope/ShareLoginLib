@@ -19,23 +19,23 @@ import java.net.URL;
  */
 class SlUtils {
 
-	@Nullable
-	static byte[] getImageThumbByteArr(@Nullable String src) {
-		return getImageThumbByteArr(getBitmapFromUrl(src));
-	}
+    @Nullable
+    static byte[] getImageThumbByteArr(@Nullable String src) {
+        return getImageThumbByteArr(getBitmapFromUrl(src));
+    }
 
-	@Nullable
-	private static Bitmap getBitmapFromUrl(@Nullable String src) {
-		try {
-			URL url = new URL(src);
-			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-			conn.connect();
-			return BitmapFactory.decodeStream(conn.getInputStream());
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
+    @Nullable
+    private static Bitmap getBitmapFromUrl(@Nullable String src) {
+        try {
+            URL url = new URL(src);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.connect();
+            return BitmapFactory.decodeStream(conn.getInputStream());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
     /**
      * Note:外部传入的bitmap可能会被用于其他的地方，所以这里不能做recycle()

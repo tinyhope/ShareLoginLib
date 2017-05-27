@@ -36,19 +36,15 @@ public class SsoLoginManager {
         SsoLoginManager.listener = listener;
         switch (type) {
             case QQ:
-                if (ShareLoginSDK.isQQInstalled(activity)) {
-                    Intent intent = new Intent(activity, SL_QQHandlerActivity.class).putExtra(ShareLoginSDK.KEY_IS_LOGIN_TYPE, true);
-                    activity.startActivity(intent);
-                    activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-                } else {
-                    if (listener != null) {
-                        listener.onError("未安装QQ");
-                    }
-                }
+                Intent intent = new Intent(activity, SL_QQHandlerActivity.class);
+                intent.putExtra(ShareLoginSDK.KEY_IS_LOGIN_TYPE, true);
+                activity.startActivity(intent);
+                activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                 break;
             case WEIBO:
-                Intent intent = new Intent(activity, SL_WeiBoHandlerActivity.class).putExtra(ShareLoginSDK.KEY_IS_LOGIN_TYPE, true);
-                activity.startActivity(intent);
+                Intent intent1 = new Intent(activity, SL_WeiBoHandlerActivity.class);
+                intent1.putExtra(ShareLoginSDK.KEY_IS_LOGIN_TYPE, true);
+                activity.startActivity(intent1);
                 activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                 break;
             case WEIXIN:
@@ -62,6 +58,8 @@ public class SsoLoginManager {
                     }
                 }
                 break;
+            default:
+                throw new IllegalArgumentException("not supported login type");
         }
     }
 
@@ -74,9 +72,9 @@ public class SsoLoginManager {
 
         /**
          * @param accessToken 第三方给的一次性token，几分钟内会失效
-         * @param uId         用户的id
-         * @param expiresIn   过期时间
-         * @param wholeData   第三方本身返回的全部json数据
+         * @param uId 用户的id
+         * @param expiresIn 过期时间
+         * @param wholeData 第三方本身返回的全部json数据
          */
         @CallSuper
         public void onSuccess(String accessToken, String uId, long expiresIn, @Nullable String wholeData) {
@@ -94,7 +92,7 @@ public class SsoLoginManager {
         }
 
         @CallSuper
-        protected void onComplete() {
+        void onComplete() {
             SsoLoginManager.recycle();
         }
     }
@@ -103,5 +101,4 @@ public class SsoLoginManager {
 
         void onLoginResp(String respCode, SsoLoginManager.LoginListener listener);
     }
-
 }

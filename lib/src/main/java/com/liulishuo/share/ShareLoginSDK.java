@@ -1,25 +1,20 @@
 package com.liulishuo.share;
 
-import java.io.File;
-import java.util.List;
-import java.util.Locale;
-
 import android.app.Application;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
-
-import com.sina.weibo.sdk.api.share.IWeiboShareAPI;
-import com.sina.weibo.sdk.api.share.WeiboShareSDK;
+import com.sina.weibo.sdk.WeiboAppManager;
+import com.sina.weibo.sdk.auth.WbAppInfo;
 import com.sina.weibo.sdk.utils.LogUtil;
 import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
+import java.io.File;
+import java.util.List;
+import java.util.Locale;
 
-/**
- * Created by echo on 5/18/15.
- */
 public class ShareLoginSDK {
 
     public static final String TAG = "ShareLoginSDK";
@@ -74,13 +69,12 @@ public class ShareLoginSDK {
     }
 
     public static boolean isWeiBoInstalled(@NonNull Context context) {
-        IWeiboShareAPI shareAPI = WeiboShareSDK.createWeiboAPI(context, SlConfig.weiBoAppId);
-        return shareAPI.isWeiboAppInstalled();
+        WbAppInfo wbAppInfo = WeiboAppManager.getInstance(context.getApplicationContext()).getWbAppInfo();
+        return wbAppInfo != null && wbAppInfo.isLegal();
     }
 
     public static boolean isWeiXinInstalled(Context context) {
         IWXAPI api = WXAPIFactory.createWXAPI(context, SlConfig.weiXinAppId, true);
         return api.isWXAppInstalled();
     }
-
 }
