@@ -14,7 +14,6 @@
         <activity
             android:name=".activity.SL_WeiBoHandlerActivity"
             android:configChanges="keyboardHidden|orientation"
-            android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Translucent.NoTitleBar"
             >
         </activity>
@@ -24,7 +23,6 @@
         <activity
             android:name=".activity.SL_QQHandlerActivity"
             android:configChanges="keyboardHidden|orientation"
-            android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Translucent.NoTitleBar"
             />
 
@@ -32,7 +30,6 @@
         <activity
             android:name="com.tencent.connect.common.AssistActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
-            android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Translucent.NoTitleBar"
             />
 
@@ -59,14 +56,12 @@
         <activity
             android:name=".activity.SL_WeiXinHandlerActivity"
             android:exported="true"
-            android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Translucent.NoTitleBar"
             />
 
         <activity-alias
             android:name="${applicationId}.wxapi.WXEntryActivity"
             android:exported="true"
-            android:screenOrientation="portrait"
             android:targetActivity="com.liulishuo.share.activity.SL_WeiXinHandlerActivity"
             android:theme="@android:style/Theme.Translucent.NoTitleBar"
             />
@@ -74,7 +69,6 @@
         <activity-alias
             android:name="${applicationId}.wxapi.WXPayEntryActivity"
             android:exported="true"
-            android:screenOrientation="portrait"
             android:targetActivity="com.liulishuo.share.activity.SL_WeiXinHandlerActivity"
             android:theme="@android:style/Theme.Translucent.NoTitleBar"
             />
